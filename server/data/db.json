@@ -1,4 +1,12 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "admin-001",
+      "name": "Super Administrator",
+      "username": "admin",
+      "password": "$2b$10$qQS2zsHBoxhdKzqxtyz8rOkRY7u4jZqTzp07MszLrUqJcX6GUL4NK",
+      "role": "admin"
+    }
+  ],
   "posts": []
 }
