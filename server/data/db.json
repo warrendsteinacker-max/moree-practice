@@ -1,10 +1,17 @@
 {
   "users": [
     {
-      "id": "1765152781228",
-      "name": "w",
-      "username": "w",
-      "password": "$2b$10$nsy7XVWDvNdlihBq2bzAgecTr5dBRf6JJfGvAcEyvz3w8KdQnGGMW",
+      "id": "admin-001",
+      "name": "Super Administrator",
+      "username": "admin",
+      "password": "$2a$12$.n9HKr/amwnukCtuqRbIPOEgZKqhiquYF3j.rrVVvemnXk/4.T9fW", 
+      "role": "admin"
+    },
+    {
+      "id": "1765151211163",
+      "name": "warren",
+      "username": "steinacker",
+      "password": "$2b$10$iDR5xNtc.jJ.3f0hCRdp3u3bGaDkaKdhU.LykuN2kXAjL23oH4ar.",
       "role": "user"
     }
   ],
