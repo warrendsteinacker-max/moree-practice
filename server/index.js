@@ -1,4 +1,3 @@
-// Add the 'path' module import
 const path = require('path');
 
 // Use path.resolve to reliably load the .env file from the root directory
@@ -14,11 +13,12 @@ const jwt = require('jsonwebtoken');
 
 const PORT = 5000;
 const app = express();
+
+// --- Database Setup ---
 const dbFile = path.join(__dirname, 'data', 'db.json');
 const adapter = new JSONFile(dbFile);
 
-// ADDED FIX: Provides default data ({ users: [], posts: [] }) to the Low constructor
-// This prevents the "lowdb: missing default data" error if db.json is empty or unreadable.
+// Lowdb safety net: Provides default structure if db.json is empty/invalid
 const db = new Low(adapter, { users: [], posts: [] });
 
 // Ensure JWT_SECRET is set
@@ -35,8 +35,7 @@ app.use(bodyParser.json());
 // --- Database Initialization ---
 const initializeDb = async () => {
     await db.read();
-    // db.data = db.data || { users: [], posts: [] }; // This line is now redundant but harmless
-
+    
     // Check if admin user needs to be created based on .env variables
     const adminExists = db.data.users.some(user => user.username === process.env.ADMIN_USERNAME);
 
@@ -81,7 +80,7 @@ const authorizeAdmin = (req, res, next) => {
 
 // --- Routes ---
 
-// Public Route: User Registration
+// Public Route: User Registration (Includes duplicate password check)
 app.post('/api/register', async (req, res) => {
     await db.read();
     const { name, username, password } = req.body;
@@ -90,11 +89,22 @@ app.post('/api/register', async (req, res) => {
         return res.status(400).send('Username and password are required.');
     }
 
+    // 1. Check for Duplicate Username (Standard Security Check)
     if (db.data.users.some(user => user.username === username)) {
         return res.status(409).send('Username already exists.');
     }
 
+    // 2. CHECK FOR DUPLICATE PASSWORD (Requested Security Check)
     try {
+        const isPasswordTaken = await Promise.all(
+            db.data.users.map(user => bcrypt.compare(password, user.password))
+        ).then(results => results.includes(true));
+
+        if (isPasswordTaken) {
+            return res.status(409).send('This password has already been used by another account.');
+        }
+
+        // --- If both checks pass, proceed with registration ---
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = {
             id: Date.now().toString(),
@@ -107,7 +117,8 @@ app.post('/api/register', async (req, res) => {
         await db.write();
         res.status(201).send('Account created successfully.');
     } catch (e) {
-        res.status(500).send('Registration failed.');
+        console.error("Registration error:", e);
+        res.status(500).send('Registration failed due to server error.');
     }
 });
 

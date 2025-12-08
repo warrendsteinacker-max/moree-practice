@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const PostsPage = () => {
@@ -8,7 +8,7 @@ const PostsPage = () => {
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(true);
 
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         try {
             const response = await api.get('/posts'); 
             setPosts(response.data);
@@ -17,19 +17,16 @@ const PostsPage = () => {
             console.error('Failed to fetch posts:', error);
             setLoading(false);
         }
-    };
+    }, [api]);
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [fetchPosts]);
 
     const handleAddPost = async (e) => {
         e.preventDefault();
         try {
-            // All authenticated users can post
             await api.post('/posts', { title, content });
-            
-            // Re-fetch posts to include the new one
             fetchPosts(); 
             setTitle('');
             setContent('');
@@ -43,10 +40,7 @@ const PostsPage = () => {
             return;
         }
         try {
-            // Only admin role can delete (backend enforces this)
             await api.delete(`/posts/${postId}`);
-            
-            // Remove the post from the local state
             setPosts(posts.filter(post => post.id !== postId));
         } catch (error) {
             alert(error.response?.data || 'Failed to delete post. Only administrators can delete posts.');
@@ -55,29 +49,52 @@ const PostsPage = () => {
 
     if (loading) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading Blog Posts...</div>;
 
+    // --- NEW/UPDATED STYLES ---
     const postContainerStyle = { 
-        border: '1px solid #ddd', 
-        padding: '15px', 
-        marginBottom: '15px', 
-        borderRadius: '6px',
-        background: '#fff',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        border: '1px solid #e9ecef', 
+        padding: '20px', 
+        marginBottom: '20px', 
+        borderRadius: '8px',
+        background: '#ffffff',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        transition: 'transform 0.2s',
+        // Optional: Hover effect for a touch of polish
+        ':hover': { transform: 'translateY(-2px)' } 
     };
     
     const postFormStyle = { 
-        border: '2px solid #1a5632', 
-        padding: '25px', 
+        border: '1px solid #007bff', 
+        padding: '30px', 
         marginBottom: '30px', 
-        borderRadius: '8px', 
-        background: '#f8fdf8' 
+        borderRadius: '10px', 
+        background: '#e9f7ff' // Light blue background
     };
 
+    const formButtonStyle = { 
+        padding: '10px 20px', 
+        background: '#007bff', 
+        color: 'white', 
+        border: 'none', 
+        borderRadius: '6px', 
+        cursor: 'pointer',
+        fontWeight: 'bold',
+        transition: 'background-color 0.3s'
+    };
+    // --------------------------
+
     return (
-        <div>
-            {/* Conditional Rendering: Show Add Post form to ALL authenticated users */}
+        // --- UPDATED MAIN LAYOUT STYLE ---
+        <div style={{
+            maxWidth: '900px', // Increased width slightly for content
+            margin: '0 auto',   
+            padding: '20px',
+            minHeight: '100vh', 
+            backgroundColor: '#f4f6f9' // Ensure background fills space if content is short
+        }}>
+            {/* Conditional Rendering: Show Add Post form */}
             {isAuthenticated && (
                 <div style={postFormStyle}>
-                    <h3>🙏 Share Your Thoughts</h3>
+                    <h3 style={{ marginTop: '0', color: '#007bff' }}>🙏 Share Your Thoughts</h3>
                     <form onSubmit={handleAddPost}>
                         <input
                             type="text"
@@ -85,16 +102,16 @@ const PostsPage = () => {
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             required
-                            style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ccc' }}
+                            style={{ width: '100%', padding: '10px', marginBottom: '10px', border: '1px solid #ced4da', borderRadius: '4px' }}
                         />
                         <textarea
                             placeholder="What message would you like to share?"
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             required
-                            style={{ width: '100%', padding: '10px', marginBottom: '10px', minHeight: '100px', border: '1px solid #ccc' }}
+                            style={{ width: '100%', padding: '10px', marginBottom: '15px', minHeight: '100px', border: '1px solid #ced4da', borderRadius: '4px' }}
                         />
-                        <button type="submit" style={{ padding: '10px 20px', background: '#3b5998', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                        <button type="submit" style={formButtonStyle}>
                             Post Article
                         </button>
                     </form>
@@ -102,27 +119,27 @@ const PostsPage = () => {
             )}
             
             {/* Posts List */}
-            <h2 style={{ color: '#1a5632', borderBottom: '2px solid #1a5632', paddingBottom: '10px', marginBottom: '20px' }}>Latest Posts</h2>
+            <h2 style={{ color: '#333', borderBottom: '2px solid #007bff', paddingBottom: '10px', marginBottom: '25px' }}>Latest Posts</h2>
             <div>
                 {posts.length === 0 ? (
-                    <p>No posts found. Be the first to add one!</p>
+                    <p style={{ textAlign: 'center', color: '#6c757d' }}>No posts found. Be the first to add one!</p>
                 ) : (
                     posts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(post => (
                         <div key={post.id} style={postContainerStyle}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h3 style={{ margin: '0 0 10px 0', color: '#000' }}>{post.title}</h3>
+                                <h3 style={{ margin: '0 0 10px 0', color: '#333' }}>{post.title}</h3>
                                 {/* Conditional Rendering: Show Delete Button ONLY if the user is an Admin */}
                                 {isAdmin && (
                                     <button 
                                         onClick={() => handleDeletePost(post.id)}
-                                        style={{ background: 'red', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}
+                                        style={{ background: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                                     >
                                         ❌ Admin Delete
                                     </button>
                                 )}
                             </div>
-                            <p style={{ lineHeight: '1.6', color: '#555' }}>{post.content}</p>
-                            <small style={{ display: 'block', marginTop: '10px', color: '#999' }}>
+                            <p style={{ lineHeight: '1.6', color: '#495057' }}>{post.content}</p>
+                            <small style={{ display: 'block', marginTop: '10px', color: '#adb5bd', fontSize: '0.85em' }}>
                                 Posted by Author ID: {post.authorId} on {new Date(post.createdAt).toLocaleDateString()}
                             </small>
                         </div>
