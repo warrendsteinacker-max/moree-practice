@@ -15,5 +15,13 @@
       "role": "user"
     }
   ],
-  "posts": []
+  "posts": [
+    {
+      "id": "1765202403368",
+      "title": "dgszdbzdbfzfb",
+      "content": "seryshwsrthdrfthsrtjhsfjdfjfghgfhjfgjfgjhfghgfjdghj",
+      "authorId": "1765200526339",
+      "createdAt": "2025-12-08T14:00:03.368Z"
+    }
+  ]
 }
