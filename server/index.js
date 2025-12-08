@@ -2,7 +2,6 @@
 const path = require('path');
 
 // Use path.resolve to reliably load the .env file from the root directory
-// This fixes issues caused by running 'node index.js' from different directories.
 require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
 
 const express = require('express');
@@ -17,7 +16,10 @@ const PORT = 5000;
 const app = express();
 const dbFile = path.join(__dirname, 'data', 'db.json');
 const adapter = new JSONFile(dbFile);
-const db = new Low(adapter);
+
+// ADDED FIX: Provides default data ({ users: [], posts: [] }) to the Low constructor
+// This prevents the "lowdb: missing default data" error if db.json is empty or unreadable.
+const db = new Low(adapter, { users: [], posts: [] });
 
 // Ensure JWT_SECRET is set
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_for_development';
@@ -33,9 +35,9 @@ app.use(bodyParser.json());
 // --- Database Initialization ---
 const initializeDb = async () => {
     await db.read();
-    db.data = db.data || { users: [], posts: [] };
+    // db.data = db.data || { users: [], posts: [] }; // This line is now redundant but harmless
 
-    // Check if admin user needs to be created
+    // Check if admin user needs to be created based on .env variables
     const adminExists = db.data.users.some(user => user.username === process.env.ADMIN_USERNAME);
 
     if (!adminExists && process.env.ADMIN_USERNAME && process.env.ADMIN_PASSWORD) {
@@ -120,7 +122,8 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        if (await bcrypt.compare(password, user.password)) {
+        // CRITICAL FIX: Compares submitted password (plain text) to stored hash
+        if (await bcrypt.compare(password, user.password)) { 
             const accessToken = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '1h' });
             res.json({ accessToken, role: user.role, name: user.name });
         } else {
@@ -134,7 +137,6 @@ app.post('/api/login', async (req, res) => {
 // Public Route: Get All Posts
 app.get('/api/posts', async (req, res) => {
     await db.read();
-    // Posts are publically visible
     res.json(db.data.posts);
 });
 

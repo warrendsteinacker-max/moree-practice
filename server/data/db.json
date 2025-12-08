@@ -4,24 +4,16 @@
       "id": "admin-001",
       "name": "Super Administrator",
       "username": "admin",
-      "password": "$2a$12$.n9HKr/amwnukCtuqRbIPOEgZKqhiquYF3j.rrVVvemnXk/4.T9fW", 
+      "password": "$2a$12$.n9HKr/amwnukCtuqRbIPOEgZKqhiquYF3j.rrVVvemnXk/4.T9fW",
       "role": "admin"
-    }
-  ],
-  "posts": [
-    {
-      "id": "1765151306020",
-      "title": "warren",
-      "content": "church update",
-      "authorId": "1765151211163",
-      "createdAt": "2025-12-07T23:48:26.020Z"
     },
     {
-      "id": "1765151325356",
-      "title": "812371823skjhdvbasdkjhvbsdhkjvb",
-      "content": "skgvashkjdgvhkjasdgvkjasg",
-      "authorId": "1765151211163",
-      "createdAt": "2025-12-07T23:48:45.356Z"
+      "id": "1765200526339",
+      "name": "W",
+      "username": "S",
+      "password": "$2b$10$.o5pNDK9oHOL6eziDUWmYuaUOe5uWvM/CcK7lPuQ85Acs4EIKfTg.",
+      "role": "user"
     }
-  ]
+  ],
+  "posts": []
 }
